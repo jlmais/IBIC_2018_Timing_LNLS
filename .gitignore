@@ -1,0 +1,10 @@
+*.aux
+*.bbl
+*.bcf
+*.blg
+*.log
+*.run.xml
+*.pdf
+*.~lock*
+*.gz
+*.dvi
