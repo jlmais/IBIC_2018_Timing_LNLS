@@ -66,19 +66,18 @@
 
 
 \section{introduction}
-The AMC FMC carrier (AFC)~\cite{afc-git} is a MicroTCA.4 AMC board partially based on Simple PCIe FMC carrier (SPEC)~\cite{spec} design. 
-The AFC board was designed to be the open-source platform for Sirius BPM and orbit feedback systems \cite{ebpm_icalepcs13}.
+Sirius timing system is an event based, as described in \cite{timing_icalepcs15}, where an EVG broadcasts a data frame ... the event receivers decode the data to output triggers and clock synchronized to RF for diagnostics and injection devices as well as BPM electronics.   
+The Sirius BPM electronics is composed by an analog standalone module, an ADC and a DSP board ... MicroTCA.4 platform was adopted ... The AMC FMC carrier (AFC)~\cite{afc-git} is a MicroTCA.4 AMC board partially based on Simple PCIe FMC carrier (SPEC)~ \cite{spec} design. 
+The AFC board was designed to be an open-source platform for Sirius BPM and orbit feedback systems \cite{ebpm_icalepcs13}.
 
-It was 8 bidirectional trigger lines in the AMC connector...
-
-The FMC-POF [reference to ohwr page] was designed to provide 5 POF outputs...
-
-Sirius Timing System is event based, as described in \cite{timing_icalepcs15}.
+Thanks to the flexible clock circuits and triggers distribution options available in AFC board and MicroTCA.4 platform we decide to develop and timing receiver board based on the same hardware platform... 
 
 \section{hardware}
 Short review about hardware focusing on timing application.
 
 \subsection{AFC}
+
+It has 8 bidirectional trigger lines in the AMC connector... Flexible clock circuits... HPC FMC connectors with n differential clocks and n triggers... Artix-7 FPGA ...
 
 \begin{figure}[!htb]
    \centering
@@ -88,7 +87,7 @@ Short review about hardware focusing on timing application.
 \end{figure}
 
 \subsection{FMC-POF}
-\cite{fmc-pof-git}
+The FMC-POF \cite{fmc-pof-git} was designed to provide 5 POF outputs to triggers external devices near to the BPM Crate such as current power supplies.
 
 \begin{figure}[!htb]
    \centering
@@ -97,8 +96,8 @@ Short review about hardware focusing on timing application.
    \label{fig:fmc_pof}
 \end{figure}
 
-\subsection{RTM}
-\cite{rtm-sfp-git}
+\subsection{RTM-SFP}
+The RTM-SFP \cite{rtm-sfp-git} is a Rear Transition Module board MicroTCA.4 standard. Its main components are 8 SFP connectors to provide optical fiber interface with timing system and a Si570 programmable oscillator to output a reference clock to GTP transceivers. 
 
 \begin{figure}[!htb]
    \centering
@@ -109,13 +108,14 @@ Short review about hardware focusing on timing application.
 
 \section{FPFA Gateware}
 
+This section describes the main aspects of the FPGA gateware to implement an event receiver and a frequency and phase locked loop to output a low jitter synchronized clock which is the reference to the ADCs of the BPM electronics.
+
 \subsection{Event Receiver}
 
-Describe configurable parameters implemented to the event receiver like pulse width, delay, polarity and so on. Take the EVE and EVR description in the last paper as an exemple.
+Describes configurable parameters implemented to the event receiver like pulse width, delay, polarity and so on. Take the EVE and EVR description in the last paper as an example.
 
-\subsection{Low Jitter Reference Clock}
-Describe how the reference clock is generated.
-One of the main propose of this project is to provide a reference clock to the ADCs of the DBPM electronics. The frequency defined to be the reference was $\frac{5}{36}RF$
+\subsection{Low Jitter Synchronized Clock}
+The main purpose of this project is providing reference clock to the ADCs of the BPM electronics. The defined frequency to be the reference was $\frac{5}{36}RF$
 The PLL FPGA block generates from event clock the reference clock and  
 \[f_{dmtd} = f_{ref}\frac{N}{N+1}\]
 
