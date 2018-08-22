@@ -40,7 +40,6 @@
 \usepackage[USenglish]{babel}
 
 \addbibresource{citations.bib}
-\bibliography{citations}
 
 % Don't justify URLs in the references
 \renewcommand*{\bibfont}{\raggedright}
@@ -66,16 +65,25 @@
 
 
 \section{introduction}
-Sirius timing system is an event based, as described in \cite{timing_icalepcs15}, where an EVG broadcasts a data frame ... the event receivers decode the data to output triggers and clock synchronized to RF for diagnostics and injection devices as well as BPM electronics.   
-The Sirius BPM electronics is composed by an analog standalone module, an ADC and a DSP board ... MicroTCA.4 platform was adopted ... The AMC FMC carrier (AFC)~\cite{afc-git} is a MicroTCA.4 AMC board partially based on Simple PCIe FMC carrier (SPEC)~ \cite{spec} design. 
-The AFC board was designed to be an open-source platform for Sirius BPM and orbit feedback systems \cite{ebpm_icalepcs13}.
+Sirius is a 4th  generation  synchrotron light source  based  on  a 5BA magnetic lattice under construction in Brazil by LNLS~\cite{sirius_ipac16}. The machine, scheduled for commissioning in the end of 2018~\cite{rodrigues2016sirius}, consists of a 150 MeV Linac, a 150 MeV to 3 GeV booster synchrotron and a 3 GeV, 518 meters circumference, storage ring with 20 straight sections, designed to achieve a beam emittance of \SI{0.25}{nm$\cdot$rad}. Booster and storage RF frequency is \SI{499.658}{MHz} and Linac will inject in single or multi-bunch mode at \SI{2}{Hz}.
 
-Thanks to the flexible clock circuits and triggers distribution options available in AFC board and MicroTCA.4 platform we decide to develop and timing receiver board based on the same hardware platform... 
+Sirius timing system~\cite{timing_icalepcs15} is a star topology optical fiber network where an event generator broadcasts event frames to event receivers. From a decoded event frame an event receiver can output low jitter signals synchronized to the RF frequency for the beam injection process as well as reference clocks and triggers for diverse subsystems such as electron BPMs. The system is composed of Ethernet-configured standalone modules developed by SINAP through a collaboration with LNLS and controlled remotely by an EPICS soft IOC designed by LNLS~\cite{sinap-timing-epics-ioc}.
+
+The Sirius BPM electronics is composed by an analog standalone module, an ADC and a DSP board ... MicroTCA.4 platform was adopted ... The AMC FMC carrier (AFC)~\cite{afc-git} is a MicroTCA.4 AMC board partially based on Simple PCIe FMC carrier (SPEC)~\cite{spec} design. 
+The AFC board was designed to be an open-source platform for Sirius BPM and orbit feedback systems~\cite{ebpm_icalepcs13}.
+
+Thanks to the flexible clock circuits and triggers distribution available in AFC board and MicroTCA.4 platform we decide to develop and timing receiver board based on the same hardware platform... 
 
 \section{hardware}
 Short review about hardware focusing on timing application.
 
-\subsection{AFC}
+\subsection{AMC FMC Carrier (AFC)}
+
+Merge description below with technical features described in AFC ohwr focusing on timing issues
+
+The  DBE  FPGA  board  was  specified  by  LNLS  and  designed  by  WUT  as  a  double-width  AMC  card  fully  compliant  to  the  MicroTCA.4  standard,  featuring  large  SDRAM   memory   (512   MB   or   2   GB)   with   32-bit   interface,    2    fully    populated    high-pin    count    FMC    mezzanine slots, option for 8 multigigabit links routed to the    MicroTCA    Rear    Transition    Module    (
+uRTM) connector, 8 MicroTCA.4 M-LVDS triggers, connectivity to  PCIe  at  Fat  Pipe  1  (x4  link),  redundant  1  Gb  Ethernet  ports,  full  hardware  support  for  the  White  Rabbit  timing  system, flexible clocking multiplexing allowing routing of 
+MicroTCA.4  low-jitter  clocks  to  any  of  the  FMC  slots  and provision for standalone operation. The FPGA device in  use  is  Xilinx  Artix-7  200T  FFG1156,  which  provides  large I/O pin count at low price. 
 
 It has 8 bidirectional trigger lines in the AMC connector... Flexible clock circuits... HPC FMC connectors with n differential clocks and n triggers... Artix-7 FPGA ...
 
@@ -131,6 +139,13 @@ The PLL FPGA block generates from event clock the reference clock and
    \includegraphics*[width=0.8\columnwidth]{AFCFPGADMTD}
    \caption{FPGA frequency and phase controller.}
    \label{fig:AFCFPGADMTD}
+\end{figure}
+
+\begin{figure}[!htb]
+   \centering
+   \includegraphics*[width=0.8\columnwidth]{AFC_TIMING_SI571}
+   \caption{Phase noise.}
+   \label{fig:AFCPhaseNoise}
 \end{figure}
 
 \section{Software Interface}
