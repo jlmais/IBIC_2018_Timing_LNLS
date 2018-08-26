@@ -1,0 +1,162 @@
+\documentclass[a4paper,
+               %boxit,        % check whether paper is inside correct margins
+               %titlepage,    % separate title page
+               %refpage       % separate references
+               biblatex,      % biblatex is used
+               %keeplastbox,  % flushend option: not to un-indent last line in References
+               %nospread,     % flushend option: do not fill with whitespace to balance columns
+               %hyphens,      % allow \url to hyphenate at "-" (hyphens)
+               %xetex,        % use XeLaTeX to process the file
+               %luatex,       % use LuaLaTeX to process the file
+               ]{jacow}
+%
+% ONLY FOR \footnote in table/tabular
+%
+\usepackage{pdfpages,multirow,ragged2e} %
+%
+% CHANGE SEQUENCE OF GRAPHICS EXTENSION TO BE EMBEDDED
+% ----------------------------------------------------
+% test for XeTeX where the sequence is by default eps-> pdf, jpg, png, pdf, ...
+%    and the JACoW template provides JACpic2v3.eps and JACpic2v3.jpg which
+%    might generates errors, therefore PNG and JPG first
+%
+\makeatletter%
+	\ifboolexpr{bool{xetex}}
+	 {\renewcommand{\Gin@extensions}{.pdf,%
+	                    .png,.jpg,.bmp,.pict,.tif,.psd,.mac,.sga,.tga,.gif,%
+	                    .eps,.ps,%
+	                    }}{}
+\makeatother
+
+% CHECK FOR XeTeX/LuaTeX BEFORE DEFINING AN INPUT ENCODING
+% --------------------------------------------------------
+%   utf8  is default for XeTeX/LuaTeX
+%   utf8  in LaTeX only realises a small portion of codes
+%
+\ifboolexpr{bool{xetex} or bool{luatex}} % test for XeTeX/LuaTeX
+ {}                                      % input encoding is utf8 by default
+ {\usepackage[utf8]{inputenc}}           % switch to utf8
+
+\usepackage[USenglish]{babel}
+
+\addbibresource{citations.bib}
+
+% Don't justify URLs in the references
+\renewcommand*{\bibfont}{\raggedright}
+
+%%
+%%   Lengths for the spaces in the title
+%%   \setlength\titleblockstartskip{..}  %before title, default 3pt
+%%   \setlength\titleblockmiddleskip{..} %between title + author, default 1em
+%%   \setlength\titleblockendskip{..}    %afterauthor, default 1em
+
+\begin{document}
+
+\title{A MicroTCA.4  Timing Receiver for the Sirius Timing System}
+
+\author{J.L.N. Brito\thanks{joao.brito@lnls.br}, S.R. Marques, D.O. Tavares, L.M. Russo, G.B.M. Bruno, LNLS, Campinas, Brazil}
+	
+\maketitle
+
+%
+\begin{abstract}
+   The AMC FMC carrier (AFC) is a MicroTCA.4 AMC board which has a very flexible clock circuit that enables any clock source to be connected to any clock input, including telecom clock, FMC clocks, programmable VCXO oscillator and FPGA. This paper presents the use of the AFC board as an event receiver connected to the Sirius timing system to provide low jitter synchronized clocks and triggers for Sirius BPM electronics and other devices.
+\end{abstract}
+
+
+\section{introduction}
+Sirius is a 4th  generation  synchrotron light source  based  on  a 5BA magnetic lattice under construction in Brazil by LNLS~\cite{sirius_ipac16}. The machine, scheduled for commissioning in the end of 2018~\cite{rodrigues2016sirius}, consists of a 150 MeV Linac, a 150 MeV to 3 GeV booster synchrotron and a 3 GeV, 518 meters circumference, storage ring with 20 straight sections, designed to achieve a beam emittance of \SI{0.25}{nm$\cdot$rad}. Booster and storage RF frequency is \SI{499.658}{MHz} and Linac will inject in single or multi-bunch mode at \SI{2}{Hz}.
+
+Sirius timing system~\cite{timing_icalepcs15} is a star topology optical fiber network where an event generator broadcasts event frames to the event receivers. An event frame decoded by an event receiver can generate a clock or trigger synchronized to the Sirius RF frequency for the beam injection process and other subsystems such as electron BPMs. The system is composed of Ethernet-configured standalone modules developed by SINAP through a collaboration with LNLS and controlled remotely by an EPICS soft IOC designed by LNLS~\cite{sinap-timing-epics-ioc}.
+
+The Sirius BPM and orbit feedback systems were developed over an open-source hardware platform~\cite{ebpm_icalepcs13} based on MicroTCA.4 crates, AMC modules, FMC modules, 1 Gigabit Ethernet and PCI Express connectivity. The digital back-end of these systems is the AMC FMC carrier (AFC)~\cite{afc-git}, a MicroTCA.4 AMC board partially based on Simple PCIe FMC carrier (SPEC)~\cite{spec} design. 
+
+Thanks to the flexible clock circuits, trigger and clock distribution options and digital interfaces available in the AFC board and MicroTCA.4 platform, the same hardware platform could be used to develop an AFC timing receiver board to provide triggers and synchronized clocks for Sirius BPM electronics and other devices. From now on, it shall be referred to below as AFC timing. 
+
+\section{hardware}
+This section presents the AFC board focusing on timing applications and the interface boards FMC 5 POF and uTCA RTM 8 SFP+.
+
+\subsection{AFC}
+
+The AFC board was specified by LNLS and designed by WUT as a double-width AMC card with 2 fully populated high-pin count FMC mezzanine slots, option for 8 multigigabit links routed to the MicroTCA Rear Transition Module (uRTM) connector, 8 MicroTCA.4 M-LVDS triggers, connectivity to PCIe at Fat Pipe 1 (x4 link), redundant 1 Gb Ethernet ports, full hardware support for the White Rabbit timing system and provision for standalone operation. The FPGA device in use is Xilinx Artix-7 200T FFG1156 and the available clocking resources are a clock switch (Analog Devices ADN4604) allowing routing of MicroTCA.4 low-jitter clocks to any of the FMC slots or AMC connector, a 10-280~MHz I$_{2}$C programmable VCXO oscillator (Silicon Labs Si571, 571BJC000121G), a 25~MHz VCTCXO (Mercury VM53S3-25.000) connected to a frequency synthesizer (Texas Instruments CDCM61004) fixed configured to 125~MHz, a 20~MHz VCXO (IQD VCXO026156), three DACs (Analog Devices AD5662) to control the oscillators. Once inside a MicroTCA crate, an AFC timing should be output triggers and a low-jitter synchronized clock through the AMC connector to the other AFC boards running in the same crate. The low-jitter clock will be used as a reference clock from the ADCs of the BPM electronics. \textbf{É necessário falar sobre a importância da qualidade deste clock e dizer o quanto ele pode afetar a qualidade da medida dos BPMs?}
+
+\begin{figure}[!htb]
+   \centering
+   \includegraphics*[width=0.8\columnwidth]{AFC_POFs_resized}
+   \caption{AFC board.}
+   \label{fig:afc_pofs}
+\end{figure}
+
+\subsection{FMC 5 POF}
+
+The FMC 5 POF \cite{fmc-pof-git} was designed to provide up to 5 plastic optical fiber (POF) IOs, where each POF slot can be manufactured as input or output. Sirius timing system will use these boards with 5 POF outputs to trigger near devices such as power supplies during the booster energy ramp.
+
+\begin{figure}[!htb]
+   \centering
+   \includegraphics*[width=0.5\columnwidth]{FMC_POF_resized}
+   \caption{FMC 5 POF is a FMC board with 5 POF outputs.}
+   \label{fig:fmc_pof}
+\end{figure}
+
+\subsection{uTCA RTM 8 SFP+}
+The uTCA RTM 8 SFP+ \cite{rtm-sfp-git} is a Rear Transition Module board MicroTCA.4 standard. Its main components are 8 SFP+ connectors, which will provide optical fiber interface with timing system, and a general purpose 10-280~MHz I$_{2}$C programmable XO oscillator (Silicon Labs Si570, 570BCC000121G) to output a reference clock to the FPGA GTP transceivers. 
+
+\begin{figure}[!htb]
+   \centering
+   \includegraphics*[width=0.8\columnwidth]{RTM_SFP_resized}
+   \caption{RTM with 8 SFP.}
+   \label{fig:rtm_sfp}
+\end{figure}
+
+\section{FPFA Gateware}
+
+This section describes the main aspects of the FPGA gateware to implement an event receiver and a frequency and phase locked loop to output a low jitter synchronized reference clock to the ADCs of the BPM electronics.
+
+\subsection{Event Receiver}
+
+An event frame sent from the EVG consists of an 8-bit event code and an 8-bit distributed data bus (DBUS), where each bit of the DBUS maps a sinchronized clock generated by the EVG.
+As the EVG is continuously sending event frames, an event receiver can be configured to monitor a bit of the DBUS or an event code to output a clock or a trigger, respectively. 
+The AFC timing was designed to have 10 POF outputs, 5 from each FMC 5 POF board, and 8 
+Describes configurable parameters implemented to the event receiver like pulse width, delay, polarity and so on. Take the EVE and EVR description in the last paper as an example.
+
+\subsection{Frequency and Phase Locked Loop}
+To provide a reference clock to the ADCs of the BPM electronics... 
+The frequency of the reference clock is $f_{ref}=\frac{5}{36}RF$.
+A FPGA PLL block generates the reference clock from event
+\[f_{ref}=\frac{5}{36}RF\]
+\[f_{dmtd} = f_{ref}\frac{N}{N+1}\]
+
+\[\Delta t_{min}=\frac{1}{Nf_{ref}}\]
+
+\begin{figure}[!htb]
+   \centering
+   \includegraphics*[width=0.8\columnwidth]{AFCRefClockLoop}
+   \caption{Layout of frequency and phase loop.}
+   \label{fig:AFCRefClockLoop}
+\end{figure}
+
+\begin{figure}[!htb]
+   \centering
+   \includegraphics*[width=0.8\columnwidth]{AFCFPGADMTD}
+   \caption{FPGA frequency and phase controller.}
+   \label{fig:AFCFPGADMTD}
+\end{figure}
+
+\begin{figure}[!htb]
+   \centering
+   \includegraphics*[width=0.8\columnwidth]{AFC_TIMING_SI571}
+   \caption{Phase noise.}
+   \label{fig:AFCPhaseNoise}
+\end{figure}
+
+\section{Software Interface}
+Describe the software interface supported HALCS and EPICS IOC.
+
+\section{CONCLUSION}
+
+Analyse tests?
+
+\printbibliography
+\newpage
+
+\end{document}
