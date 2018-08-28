@@ -69,7 +69,7 @@
 \section{introduction}
 Sirius is a 4th  generation  synchrotron light source  based  on  a 5BA magnetic lattice, currently under construction in Brazil by LNLS~\cite{sirius_ipac16}. The machine, designed to achieve a beam emittance of \SI{0.25}{nm$\cdot$rad} and scheduled for commissioning at the end of 2018~\cite{rodrigues2016sirius}, consists of a 150 MeV Linac, a 150 MeV to 3 GeV booster and a 3 GeV storage ring with 518 meters circumference and storage ring with 20 straight sections. Both booster and storage ring RF frequency is \SI{499.658}{MHz} and the Linac will inject in single or multi-bunch mode at \SI{2}{Hz}.
 
-Sirius timing system~\cite{timing_icalepcs15} is a star topology optical fiber network where an event generator broadcasts event frames to the event receivers. An event frame decoded by an event receiver can generate clock and trigger signals synchronized to the Sirius RF frequency for the beam injection process and other subsystems such as electron BPMs. The system is composed of Ethernet-configured standalone modules developed by SINAP through a collaboration with LNLS and remotely controlled by an EPICS soft IOC designed by LNLS~\cite{sinap-timing-epics-ioc}.
+Sirius timing system~\cite{timing_icalepcs15} is a star topology optical fiber network where an event generator (EVG) broadcasts event frames to the event receivers. An event frame decoded by an event receiver can generate clock and trigger signals synchronized to the Sirius RF frequency for the beam injection process and other subsystems such as electron BPMs. The system is composed of Ethernet-configured standalone modules developed by SINAP through a collaboration with LNLS and remotely controlled by an EPICS soft IOC designed by LNLS~\cite{sinap-timing-epics-ioc}.
 
 The Sirius BPM and orbit feedback systems were developed as an open-source hardware platform~\cite{ebpm_icalepcs13} based on MicroTCA.4 crates, AMC and FMC modules, 1 Gigabit Ethernet and PCI Express connectivity. The digital back-end of these systems is the AMC FMC carrier (AFC)~\cite{afc-git}, a MicroTCA.4 AMC board partially based on Simple PCIe FMC carrier (SPEC)~\cite{spec} design. 
 
@@ -80,7 +80,7 @@ This section presents the AFC board focusing on timing applications and the inte
 
 \subsection{AFC}
 
-The AFC board was specified by LNLS and designed by WUT as a double-width AMC card with 2 fully populated high-pin count FMC mezzanine slots, option for 8 multigigabit links routed to the MicroTCA Rear Transition Module (uRTM) connector, 8 MicroTCA.4 M-LVDS triggers, connectivity to PCIe at Fat Pipe 1 (x4 link), redundant 1 Gb Ethernet ports, full hardware support for the White Rabbit timing system and provision for standalone operation. 
+The AFC board was specified by LNLS and designed by WUT (Warsaw University of Technology) as a double-width AMC card with 2 fully populated high-pin count FMC mezzanine slots, option for 8 multigigabit links routed to the MicroTCA Rear Transition Module (uRTM) connector, 8 MicroTCA.4 M-LVDS triggers, connectivity to PCIe at Fat Pipe 1 (x4 link), redundant 1 Gb Ethernet ports, full hardware support for the White Rabbit timing system and provision for standalone operation. 
 
 It has a Xilinx Artix-7 200T FFG1156 FPGA and the available clocking resources are: (\textit{I}) a clock switch (Analog Devices ADN4604) allowing routing of MicroTCA.4 low-jitter clocks to any of the FMC slots or AMC connector, (\textit{II}) a 10-280~MHz I$_{2}$C programmable VCXO oscillator (Silicon Labs Si571, 571BJC000121G), (\textit{III}) a 25~MHz VCTCXO (Mercury VM53S3-25.000) connected to a frequency synthesizer (Texas Instruments CDCM61004) fixed configured to 125~MHz, (\textit{IV}) a 20~MHz VCXO (IQD VCXO026156) and (\textit{V}) three DACs (Analog Devices AD5662) to control the oscillators. 
 
@@ -142,7 +142,11 @@ From the event clock $f_{evt}$ recovered by the FPGA GTP transceiver, a Mixed-Mo
    \label{fig:AFCRefClockLoop}
 \end{figure}
 
-The frequency and phase feedback controller (Fig.~\ref{fig:AFCFPGADMTD}) composed by a frequency and phase detectors running in two independent feedback loops at the same time. The frequency detector consists of counting the rising edges of the input clocks during a time window and then, comparing the counters, produces an output proportional to $f_{ref}-f_{out}$. The phase detector is a digital version of the Dual Mixer Time Difference (DMTD)~\cite{allan1975picosecond}, which is a method to convert 
+The frequency and phase feedback controller (Fig.~\ref{fig:AFCFPGADMTD}) consists of a frequency detector (FD) and a phase detector (PD) running in two independent feedback loops at the same time to control the VCXO Si571 frequency output. The FD countes the rising edges of the two input clocks during a fixed time window to output a value proportional to the difference of frequency $f_{ref}-f_{out}$. The PD is a digital version of the Dual Mixer Time Difference (DMTD)~\cite{allan1975picosecond}, shown in Figure~\ref{fig:DigitalDMTD}. It outputs a value proportional to the phase difference between $f_{ref}$ and $f_{out}$, $\phi_{ref}-\phi_{out}$. A large difference between $f_{ref}$ and $f_{out}$ turns the PD output negligible and the VCXO is driven by the frequency feedback loop, thereby moving $f_{ref}$ toward $f_{out}$. Thus, the FD output decreases gradually and the frequency feedback loop becomes inactive when $f_{ref}-f_{out}=0$. At the same time, the PD output becomes stable and the phase feedback loop output increases, turning the phase difference $\phi_{ref}-\phi_{out}$ constant.
+
+The frequency feedback loop controls the VCXO frequency via an I$_{2}$C interface, allowing adjusts up to $\pm3500~ppm$ from the center frequency configuration. Its is also the slowest way to do it, however, its not a issue due to the taxa de medição do FD.
+
+The phase feedback loop uses the DAC AD5662 controlled by an SPI interface to tune the VCXO. 
 
 \begin{figure}[!htb]
    \centering
@@ -169,13 +173,15 @@ The frequency and phase feedback controller (Fig.~\ref{fig:AFCFPGADMTD}) compose
 \end{figure}
 
 \section{Software Interface}
-Describe the software interface supported HALCS and EPICS IOC.
+The AFC timing receiver will be interfaced with the control system by means of the HALCS framework ~\cite{halcs_pcapac16} ~\cite{halcs_icalepcs17}. It provides a modular approach for abstracting gateware modules as software services that can be exported to a control node and controlled through an RPC API. Because of that approach, all of the already supported gateware modules can be leveraged without extra effort, as the framework will automatically identify known modules and export its functionality.
+
+On top of that, an EPICS IOC with an asyn-based driver was developed to interface with HALCS, mapping the exported RPC API to EPICS PVs and providing access to all of the AFC timing receiver gateware functionalities.
 
 \section{CONCLUSION}
 
 Analyse tests?
 
-\newpage
 \printbibliography
+\newpage
 
 \end{document}
