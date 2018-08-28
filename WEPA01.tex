@@ -43,6 +43,8 @@
 
 % Don't justify URLs in the references
 \renewcommand*{\bibfont}{\raggedright}
+%No hyphenation
+\usepackage[none]{hyphenat}
 
 %%
 %%   Lengths for the spaces in the title
@@ -126,7 +128,12 @@ The AFC timing has 18 independently configurable channels, 10 POF outputs from 2
 \subsection{Frequency and Phase Locked Loop}
  \textbf{É necessário falar sobre a importância da qualidade deste clock e dizer o quanto ele pode afetar a qualidade da medida dos BPMs}
  
- The VCXO Si571 generates a low-jitter synchronized reference clock, which is distributed to the ADCs of the BPM electronics and feedbacked to the FPGA by the ADN4604 clock switch. A frequency and phase locked loop ensure the synchronization with the RF frequency, as shown in Figure~\ref{fig:AFCRefClockLoop}.
+ A frequency and phase locked loop (Fig.~\ref{fig:AFCRefClockLoop}) using the VCXO Si571 was designed to generate a low-jitter synchronized reference clock, which is distributed to the ADCs of the BPM electronics and feedbacked to the FPGA by the ADN4604 clock switch.
+
+From the event clock $f_{evt}$ recovered by the FPGA GTP transceiver, a Mixed-Mode Clock Manager (MMCM) generates the reference clock $f_{ref}$ and the $f_{dmtd}$ clock used by the frequency and phase feedback controller to measure the phase difference between $f_{ref}$ and $f_{out}$.
+\[f_{evt} = \frac{1}{4}RF \approx 124.915~MHz\]
+\[f_{ref} = \frac{10}{18}f_{evt} = \frac{5}{36}RF \approx 69.397~MHz\]
+\[f_{dmtd} = f_{ref}\frac{N}{N+1} \approx 68.918~MHz;~N=144\]
 
 \begin{figure}[!htb]
    \centering
@@ -135,23 +142,24 @@ The AFC timing has 18 independently configurable channels, 10 POF outputs from 2
    \label{fig:AFCRefClockLoop}
 \end{figure}
 
-From the event clock $f_{evt}$ recoved by the FPGA GTP transceiver, a Mixed-Mode Clock Manager (MMCM) generates the reference clock $f_{ref}$ and the $f_{dmtd}$ clock used to measure the phase difference between $f_{ref}$ and $f_{out}$:
-\[f_{evt} = \frac{1}{4}RF \approx 124.915~MHz\]
-\[f_{ref} = \frac{10}{18}f_{evt} = \frac{5}{36}RF \approx 69.397~MHz\]
-\[f_{dmtd} = f_{ref}\frac{N}{N+1} \approx 68.918~MHz;~N=144\]
+The frequency and phase feedback controller (Fig.~\ref{fig:AFCFPGADMTD}) composed by a frequency and phase detectors running in two independent feedback loops at the same time. The frequency detector consists of counting the rising edges of the input clocks during a time window and then, comparing the counters, produces an output proportional to $f_{ref}-f_{out}$. The phase detector is a digital version of the Dual Mixer Time Difference (DMTD)~\cite{allan1975picosecond}, which is a method to convert 
 
-The frequency and phase feedback controller is composed by two independent feedback loops...
-
-The block diagram of the frequency and phase feedback controller is shown in Figure~\ref{fig:AFCFPGADMTD}, 
 \begin{figure}[!htb]
    \centering
    \includegraphics*[width=0.8\columnwidth]{AFCFPGADMTD}
-   \caption{Frequency and phase feedback control.}
+   \caption{Frequency and phase feedback controller.}
    \label{fig:AFCFPGADMTD}
 \end{figure}
 
 \[f_{beat} = f_{ref}-f_{dmtd} = \frac{f_{ref}}{N+1} \approx 478.6~kHz\]
 \[\Delta t_{min} = \frac{1}{f_{dmtd}}\frac{f_{beat}}{f_{ref}} = \frac{1}{Nf_{ref}} \approx 100~ps\]
+
+\begin{figure}[!htb]
+   \centering
+   \includegraphics*[width=0.8\columnwidth]{DigitalDMTD}
+   \caption{Digital Dual Mixer Time Difference.}
+   \label{fig:DigitalDMTD}
+\end{figure}
 
 \begin{figure}[!htb]
    \centering
