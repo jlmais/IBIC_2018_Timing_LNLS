@@ -62,27 +62,35 @@
 
 
 \begin{abstract}
-   The AMC FMC carrier (AFC) is a MicroTCA.4 AMC board which has a very flexible clock circuit that enables any clock source to be connected to any clock input, including telecom clock, FMC clocks, programmable VCXO oscillator and FPGA. This paper presents the use of the AFC board as an event receiver connected to the Sirius timing system to provide low jitter synchronized clocks and triggers for Sirius BPM electronics and other devices.
+The AMC FMC carrier (AFC) is a MicroTCA.4 AMC board which has a very flexible clock circuit that enables any clock source to be connected to any clock input, including telecom clock, FMC clocks, programmable VCXO oscillator and FPGA. This paper presents the use of the AFC board as an event receiver connected to the Sirius timing system to provide low jitter synchronized clocks and triggers for Sirius BPM electronics and other devices.
 \end{abstract}
 
 
 \section{introduction}
-Sirius is a 4th  generation  synchrotron light source  based  on  a 5BA magnetic lattice, currently under construction in Brazil by LNLS~\cite{sirius_ipac16}. The machine, designed to achieve a beam emittance of \SI{0.25}{nm$\cdot$rad} and scheduled for commissioning at the end of 2018~\cite{rodrigues2016sirius}, consists of a 150 MeV Linac, a 150 MeV to 3 GeV booster and a 3 GeV storage ring with 518 meters circumference and storage ring with 20 straight sections. Both booster and storage ring RF frequency is \SI{499.658}{MHz} and the Linac will inject in single or multi-bunch mode at \SI{2}{Hz}.
+%Sirius is a 4th  generation  synchrotron light source  based  on  a 5BA magnetic lattice, currently under construction in Brazil by LNLS~\cite{sirius_ipac16}. The machine, designed to achieve a beam emittance of \SI{0.25}{nm$\cdot$rad} and scheduled for commissioning at the end of 2018~\cite{rodrigues2016sirius}, consists of a 150 MeV Linac, a 150 MeV to 3 GeV booster and a 3 GeV storage ring with 518 meters circumference and storage ring with 20 straight sections. Both booster and storage ring RF frequency is \SI{499.658}{MHz} and the Linac will inject in single or multi-bunch mode at \SI{2}{Hz}.
 
-Sirius timing system~\cite{timing_icalepcs15} is a star topology optical fiber network where an event generator (EVG) broadcasts event frames to the event receivers. An event frame decoded by an event receiver can generate clock and trigger signals synchronized to the Sirius RF frequency for the beam injection process and other subsystems such as electron BPMs. The system is composed of Ethernet-configured standalone modules developed by SINAP through a collaboration with LNLS and remotely controlled by an EPICS soft IOC designed by LNLS~\cite{sinap-timing-epics-ioc}.
+Sirius is a 4th  generation  synchrotron light source  based  on  a 5BA magnetic lattice, currently under construction in Brazil by LNLS~\cite{sirius_ipac16}. The machine, designed to achieve a beam emittance of \SI{0.25}{nm$\cdot$rad} and scheduled for commissioning at the end of 2018~\cite{rodrigues2016sirius}, consists of a 150 MeV Linac, a 150 MeV to 3 GeV booster and a 3 GeV storage ring with 518 meters circumference and 20 straight sections. Both booster and storage ring are installed in the same tunnel and both RF frequency is \SI{499.658}{MHz}. The Linac will inject in single or multi-bunch mode at \SI{2}{Hz}.
 
-The Sirius BPM and orbit feedback systems were developed as an open-source hardware platform~\cite{ebpm_icalepcs13} based on MicroTCA.4 crates, AMC and FMC modules, 1 Gigabit Ethernet and PCI Express connectivity. The digital back-end of these systems is the AMC FMC carrier (AFC)~\cite{afc-git}, a MicroTCA.4 AMC board partially based on Simple PCIe FMC carrier (SPEC)~\cite{spec} design. 
+%Sirius timing system~\cite{timing_icalepcs15} is a star topology optical fiber network where an event generator (EVG) broadcasts event frames to the event receivers. An event frame decoded by an event receiver can generate clock and trigger signals synchronized to the Sirius RF frequency for the beam injection process and other subsystems such as electron BPMs. The system is composed of Ethernet-configured standalone modules developed by SINAP through a collaboration with LNLS and remotely controlled by an EPICS soft IOC designed by LNLS~\cite{sinap-timing-epics-ioc}.
+
+Sirius timing system~\cite{timing_icalepcs15} is a star topology optical fiber network where an event generator (EVG) broadcasts event frames to the event receivers. An event frame decoded by an event receiver can generate clock and trigger signals synchronized to the Sirius RF frequency for the beam injection process and other subsystems such as electron BPM electronics. The system is composed of Ethernet-configured standalone modules remotely controlled by an EPICS soft IOC designed by LNLS~\cite{sinap-timing-epics-ioc}. Standalone modules were developed by Shanghai Institute of Applied Physics (SINAP) through a collaboration agreement with LNLS. 
+
+%The Sirius BPM and orbit feedback systems were developed as an open-source hardware platform~\cite{ebpm_icalepcs13} based on MicroTCA.4 crates, AMC and FMC modules, 1 Gigabit Ethernet and PCI Express connectivity. The digital back-end of these systems is the AMC FMC carrier (AFC)~\cite{afc-git}, a MicroTCA.4 AMC board partially based on Simple PCIe FMC carrier (SPEC)~\cite{spec} design. 
+
+The Sirius BPM and orbit feedback systems were developed as an open-source hardware platform~\cite{ebpm_icalepcs13} based on MicroTCA.4 crates, AMC and FMC modules, 1 Gigabit Ethernet and PCI Express connectivity. The digital back-end of these systems is the AMC FMC carrier (AFC)~\cite{afc-git}, a MicroTCA.4 AMC board partially based on the Simple PCIe FMC carrier (SPEC)~\cite{spec} design. 
 
 Thanks to the flexible clock circuits, the trigger and clock distribution options and the digital interfaces available in the AFC board, the same hardware platform was used to develop a timing receiver board to provide triggers and synchronized clocks for Sirius BPM electronics and other devices, upgrading the MicroTCA clock distribution board developed 3 years ago~\cite{timing_icalepcs15}. From now on, the timing receiver board shall be referred to as AFC timing. 
 
 \section{hardware}
-This section presents the AFC board focusing on timing applications and the interface boards FMC 5 POF and uTCA RTM 8 SFP+.
+This section presents the AFC board focusing on timing applications and the interface boards FMC 5 POF and MicroTCA RTM 8 SFP+.
 
 \subsection{AFC}
 
 The AFC board was specified by LNLS and designed by WUT (Warsaw University of Technology) as a double-width AMC card with 2 fully populated high-pin count FMC mezzanine slots, option for 8 multigigabit links routed to the MicroTCA Rear Transition Module (uRTM) connector, 8 M-LVDS trigger and 2 clock lines through the AMC backplane connector, connectivity to PCIe at Fat Pipe 1 (x4 link), redundant 1 Gb Ethernet ports, full hardware support for the White Rabbit timing system and provision for standalone operation. 
 
-It has a Xilinx Artix-7 200T FFG1156 FPGA and the available clocking resources are: (\textit{I}) a clock switch (Analog Devices ADN4604) allowing routing of MicroTCA.4 low-jitter clocks to any of the FMC slots or AMC connector, (\textit{II}) a 10-280~MHz I$_{2}$C programmable VCXO oscillator (Silicon Labs Si571, 571BJC000121G), (\textit{III}) a 25~MHz VCTCXO (Mercury VM53S3-25.000) connected to a frequency synthesizer (Texas Instruments CDCM61004) fixed configured to 125~MHz, (\textit{IV}) a 20~MHz VCXO (IQD VCXO026156) and (\textit{V}) three DACs (Analog Devices AD5662) to control the oscillators. 
+%deleted FIXED in the sentence "...connected to a frequency synthesizer (Texas Instruments CDCM61004) fixed configured to 125~MHz,..."
+
+It has a Xilinx Artix-7 200T FFG1156 FPGA and the available clocking resources are: (\textit{I}) a clock switch (Analog Devices ADN4604) allowing routing of MicroTCA.4 low-jitter clocks to any of the FMC slots or AMC connector, (\textit{II}) a 10-280~MHz I$_{2}$C programmable VCXO oscillator (Silicon Labs Si571, 571BJC000121G), (\textit{III}) a 25~MHz VCTCXO (Mercury VM53S3-25.000) connected to a frequency synthesizer (Texas Instruments CDCM61004) configured to 125~MHz, (\textit{IV}) a 20~MHz VCXO (IQD VCXO026156) and (\textit{V}) three DACs (Analog Devices AD5662) to control the oscillators. 
 
 Once inside a MicroTCA crate, an AFC timing should output triggers and a low-jitter synchronized clock to the other AFC boards running in the same crate through the MicroTCA crate backplane. The low-jitter clock will be used as a reference clock from the ADCs of the BPM electronics.
 
@@ -95,7 +103,9 @@ Once inside a MicroTCA crate, an AFC timing should output triggers and a low-jit
 
 \subsection{FMC 5 POF}
 
-The FMC 5 POF board~\cite{fmc-pof-git} has 5 plastic optical fiber (POF) transceivers mapping the same number of trigger lines from the FPGA through a FMC connector on the AFC board. As the input and output transceivers are different components with the same footprint, the board can be manufactured with up to 5 POF inputs or outputs. In Sirius timing system, it will output synchronized triggers for varied devices around the accelerator's facility, where most of them will be power supplies of quadrupoles and sextupoles of the booster and storage ring.
+%changed the sentence: "...most of them will be power supplies of quadrupoles and sextupoles of the booster and storage ring."
+
+The FMC 5 POF board~\cite{fmc-pof-git} has 5 plastic optical fiber (POF) transceivers mapping the same number of trigger lines from the FPGA through a FMC connector on the AFC board. As the input and output transceivers are different components with the same footprint, the board can be manufactured with up to 5 POF inputs or outputs. In Sirius timing system, it will output synchronized triggers for varied devices around the accelerator's facility, where most of them will be quadrupoles and sextupoles power supplies of booster and storage ring.
 
 \begin{figure}[!htb]
    \centering
@@ -104,13 +114,14 @@ The FMC 5 POF board~\cite{fmc-pof-git} has 5 plastic optical fiber (POF) transce
    \label{fig:fmc_pof}
 \end{figure}
 
-\subsection{uTCA RTM 8 SFP+}
-The uTCA RTM 8 SFP+ \cite{rtm-sfp-git} is a Rear Transition Module board MicroTCA.4 standard. Its main components are 8 SFP+ connectors, which will provide optical fiber interface with timing system, and a general purpose 10-280~MHz I$_{2}$C programmable XO oscillator (Silicon Labs Si570, 570BCC000121G) to output a reference clock to the FPGA GTP transceivers. 
+%Changed uTCA to MicroTCA in 3 different parts of the text
+\subsection{MicroTCA RTM 8 SFP+}
+The MicroTCA RTM 8 SFP+ \cite{rtm-sfp-git} is a Rear Transition Module board MicroTCA.4 standard. Its main components are 8 SFP+ connectors, which will provide optical fiber interface with timing system, and a general purpose 10-280~MHz I$_{2}$C programmable XO oscillator (Silicon Labs Si570, 570BCC000121G) to output a reference clock to the FPGA GTP transceivers. 
 
 \begin{figure}[!htb]
    \centering
    \includegraphics*[width=0.8\columnwidth]{RTM_SFP_resized}
-   \caption{RTM with 8 SFP.}
+   \caption{RTM with 8 SFP slots.}
    \label{fig:rtm_sfp}
 \end{figure}
 
@@ -123,10 +134,12 @@ This section describes the main aspects of the FPGA gateware to implement an eve
 An event frame sent from the EVG consists of an 8-bit event code and an 8-bit distributed data bus (DBUS), where each bit of the DBUS maps a synchronized clock generated by the EVG.
 As the EVG is continuously sending event frames at the rate of the event clock, which is $\frac{1}{4}RF=124.9145~MHz$, the AFC timing can monitor a bit of the DBUS or an event code and then output a clock or a trigger, respectively. 
 
+%Are the 8 AMC also "independently configurable"? If yes, change the text.
+% I did not understand the final part of the sentence: "...event receiving and output the trigger with a resolution of one event clock period ($\sim$8~ns), the number of pulses from 1 to 65535 and the pulse polarity level (low to high or high to low)."
 The AFC timing has 18 independently configurable channels, 10 POF outputs from 2 FMC 5 POF boards and 8 AMC configurable as input or output. An AMC channel operating as input can receive a general purpose trigger from another AFC board and, for example, send a corresponding event to the EVG. Once in trigger output mode, each one of these channels can adjust the pulse width and the delay between event receiving and output the trigger with a resolution of one event clock period ($\sim$8~ns), the number of pulses from 1 to 65535 and the pulse polarity level (low to high or high to low).  
 
 \subsection{Frequency and Phase Locked Loop}
- A frequency and phase locked loop (Fig.~\ref{fig:AFCRefClockLoop}) was designed to generate a low-jitter synchronized reference clock to the ADCs of the BPM electronics using the VCXO Si571.
+The AFC clocking resources were used to implement a frequency and phase locked loop (Fig.~\ref{fig:AFCRefClockLoop}) to generate a low-jitter synchronized reference clock to the ADCs of the BPM electronics using the Si571 VCXO.
  
 From the event clock recovered by the FPGA GTP transceiver, a Mixed-Mode Clock Manager (MMCM) generates the reference clock and also the dmtd clock, which is used by the frequency and phase feedback controller to measure the phase difference between the reference and the output clocks. Defining, respectively, the event, reference, dmtd and output clocks as $f_{evt}$, $f_{ref}$, $f_{dmtd}$ and $f_{out}$, we have
 
@@ -145,6 +158,7 @@ The frequency and phase feedback controller (Fig.~\ref{fig:AFCFPGADMTD}) is char
 
 The FD counts the rising edges of the two input clocks during a fixed time window and calculates the difference between them to output a value proportional to $f_{ref}-f_{out}$. The length of the time window determines the sample rate, which is also the resolution of the FD, configured to be 18~Hz. A proportional and integral controller closes the loop and tunes the VCXO frequency via the I$_{2}$C, an interface that allows adjusts up to $\pm3500~ppm$ from the center frequency configuration. 
 
+%hard to read... it seems OK
 The PD is a digital version of the Dual Mixer Time Difference (DMTD)~\cite{allan1975picosecond}, shown in Figure~\ref{fig:DigitalDMTD}, a linear method to measure the phase difference between two clock signals at same or near frequencies. It consists of two D flip-flops connected to the same clock source $f_{dmtd}$, which frequency is slightly lower than the one from the input clocks, undersampling $f_{ref}$ and $f_{out}$. The phase difference between the clocks on the flip-flop outputs is the same as the inputs, although the output frequencies are lower and equal or near to $f_{beat}=f_{ref}-f_{dmtd}$ and hence the time interval relative to the phase difference between the output clocks is an integer number of $f_{dmtd}$ periods. Therefore, a time counter running at $f_{dmtd}$ was used to measure the time interval and output a value $n$ proportional to $\phi_{ref}-\phi_{out}$, which is the phase difference between $f_{ref}$ and $f_{out}$ given on the interval $[0,2\pi[$ radians. It is equivalent to measure the time interval between $f_{ref}$ and $f_{out}$ with a resolution of $\Delta t_{min}$ given by
 
 \[\Delta t_{min} = \frac{1}{f_{dmtd}}\frac{f_{beat}}{f_{ref}} = \frac{1}{Nf_{ref}} \approx 100~ps\]
@@ -155,7 +169,9 @@ and hence, the resulting phase different is
 
 A moving average filter followed by a proportional controller closes the phase feedback loop driving the control voltage input of the VCXO using the DAC AD5662 controlled by an SPI interface. This configuration allows a frequency adjust range of $\pm192~ppm$ and an update rate of 478.6~kHz, as the update rate of the DAC's output is higher than the $f_{beat}$.
 
-When the both feedback loops are running, a large difference between $f_{ref}$ and $f_{out}$ turns the PD output negligible and the VCXO is driven by the frequency feedback loop, thereby moving $f_{ref}$ toward $f_{out}$. Thus, the FD output decreases gradually until the frequency feedback loop becomes inactive. At the same time, the PD output becomes stable and the phase feedback loop output increases, turning the phase difference $\phi_{ref}-\phi_{out}$ constant. The frequency feedback loop maximizes the capture range, the maximum value of ${\mid f_{ref}-f_{out} \mid}$ for which the loop locks and the PI controller gains were adjusted to minimize the locking time.
+% "When the both..." change to "when both..."
+% At the end of the sentence: "...PI controller gains" or "...PI controller gain"?
+When both feedback loops are running, a large difference between $f_{ref}$ and $f_{out}$ turns the PD output negligible and the VCXO is driven by the frequency feedback loop, thereby moving $f_{ref}$ toward $f_{out}$. Thus, the FD output decreases gradually until the frequency feedback loop becomes inactive. At the same time, the PD output becomes stable and the phase feedback loop output increases, turning the phase difference $\phi_{ref}-\phi_{out}$ constant. The frequency feedback loop maximizes the capture range, the maximum value of ${\mid f_{ref}-f_{out} \mid}$ for which the loop locks and the PI controller gains were adjusted to minimize the locking time.
 
 \begin{figure}[!htb]
    \centering
@@ -172,8 +188,10 @@ When the both feedback loops are running, a large difference between $f_{ref}$ a
 \end{figure}
 
 \section{Phase Noise Performance}
+%changed rms to RMS
+% Can we explain why 200 Hz is a good value? Could a reference be mentioned?
 
-The Figure~\ref{fig:AFCPhaseNoise} shows the phase noise of the reference clock (trace~3) and the VCXO, while free-running (trace~2) and controlled (trace~1), characterized using a Rohde \& Schwarz FSUP signal source analyzer, as well as the respective integrated rms jitter (1 Hz-5 MHz). Taking the traces 2 and 3 is possible to see that the free-running VCXO is better than the reference clock at high frequencies and the traces are crossing about 200~Hz. The integrated rms jitter was about 78~ps and 25~ps, respectively. Hence, the cutoff frequency of the phase feedback loop should be 200~Hz, which was nearly achieved adjusting the moving average filter parameters and the proportional gain, as shown by the trace 1, resulting in an integrated rms jitter of about 4~ps.
+The Figure~\ref{fig:AFCPhaseNoise} shows the phase noise of the reference clock (trace~3) and the VCXO, while free-running (trace~2) and controlled (trace~1), characterized using a Rohde \& Schwarz FSUP signal source analyzer, as well as the respective integrated RMS jitter (1 Hz - 5 MHz). Taking the traces 2 and 3 is possible to see that the free-running VCXO is better than the reference clock at high frequencies and the traces are crossing about 200~Hz. The integrated RMS jitter was about 78~ps and 25~ps, respectively. Hence, the cutoff frequency of the phase feedback loop should be 200~Hz, which was nearly achieved adjusting the moving average filter parameters and the proportional gain, as shown by the trace 1, resulting in an integrated RMS jitter of about 4~ps.
 
 \begin{figure}[!htb]
    \centering
@@ -188,8 +206,13 @@ The AFC timing will be interfaced with the control system by means of the HALCS 
 On top of that, an EPICS IOC with an asyn-based driver was developed to interface with HALCS, mapping the exported RPC API to EPICS PVs and providing access to all of the AFC timing receiver gateware functionalities.
 
 \section{CONCLUSION}
+Thanks to an open hardware project, the AFC board was developed to be the hardware platform of the Sirius BPM and orbit feedback systems. Now, it is also integrating the Sirius timing system, where more than 20 AFC timing boards will generate synchronized clocks and triggers for the BPM system and hundreds of synchronized triggers for power supplies around the accelerator.
 
-Thanks to an open hardware project, the AFC board was developed to be the hardware platform of the Sirius BPM and orbit feedback systems. Now, it is also integrating the timing system, where more than 20 AFC timing boards will generate synchronized clocks and triggers for the BPM system and hundreds of synchronized triggers for power supplies around the accelerator. Although, the project is not concluded, yet. There are some desirable features to implement as, for example, a phase compensation scheme based on the digital DMTD to automatic align the output triggers, avoiding manual calibrations during the Sirius commissioning and operation. 
+Although, the project is not concluded, yet. There are some desirable features to implement as, for example, a phase compensation scheme based on the digital DMTD to automatic align the output triggers, avoiding manual calibrations during the Sirius commissioning and operation. 
+
+\section{Acknowledgements}
+ Tomasz from CERN controls group?
+ Isa Uzun from Diamond Light Source controls group?
 
 \printbibliography
 \newpage
